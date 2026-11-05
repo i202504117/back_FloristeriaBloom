@@ -1,0 +1,125 @@
+﻿@model front_FloristeriaBloom.Models.PerfilPageViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Mi cuenta";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-top d-flex align-items-center justify-content-between">
+            <a asp-controller="Productos" asp-action="Index" class="logo">🌸 FloristeriaBloom</a>
+            <nav class="main-nav d-none d-md-flex">
+                <a asp-controller="Productos" asp-action="Index">Inicio</a>
+                <a asp-controller="Productos" asp-action="Catalogo">Productos</a>
+            </nav>
+            <div class="header-icons">
+                @if (Context.Session.GetString("Rol") == "Admin")
+                {
+                    <a asp-controller="Admin" asp-action="Index" title="Panel Admin"><i class="fa-solid fa-gear"></i> Admin</a>
+                }
+                <a asp-controller="Perfil" asp-action="Index" title="Mi cuenta"><i class="fa-solid fa-user"></i></a>
+                <a asp-controller="Carrito" asp-action="Index" class="cart-icon" title="Carrito">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="cart-section">
+        <div class="container">
+            <div class="perfil-grid">
+
+                <!-- DATOS DEL PERFIL -->
+                <div class="cart-wrapper">
+                    <h2><i class="fa-solid fa-user"></i> Mi cuenta</h2>
+
+                    @if (TempData["PerfilMensaje"] != null)
+                    {
+                        <div class="cart-alert">@TempData["PerfilMensaje"]</div>
+                    }
+
+                    <form asp-action="Actualizar" method="post">
+                        <input type="hidden" asp-for="Perfil.Id" />
+
+                        <div class="auth-field">
+                            <label class="form-label">Nombre</label>
+                            <input asp-for="Perfil.Nombre" class="form-control" required />
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="form-label">Correo</label>
+                            <input value="@Model.Perfil.Email" class="form-control" disabled />
+                            <small class="text-muted">El correo no se puede cambiar.</small>
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="form-label">Teléfono</label>
+                            <input asp-for="Perfil.Telefono" class="form-control" placeholder="999 999 999" />
+                        </div>
+
+                        <div class="auth-field">
+                            <label class="form-label">Dirección</label>
+                            <input asp-for="Perfil.Direccion" class="form-control" placeholder="Tu dirección de entrega habitual" />
+                        </div>
+
+                        <button type="submit" class="btn btn-flor w-100">Guardar cambios</button>
+                    </form>
+
+                    <a asp-controller="Account" asp-action="Logout" class="btn w-100 mt-2"
+                       style="background:#f4f4f4;color:#a91e4e;text-decoration:none;display:block;text-align:center;padding:10px;border-radius:20px;font-weight:bold;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                    </a>
+                </div>
+
+                <!-- MIS PEDIDOS -->
+                <div class="cart-wrapper">
+                    <h2><i class="fa-solid fa-truck"></i> Mis pedidos</h2>
+
+                    @if (!Model.Pedidos.Any())
+                    {
+                        <div class="cart-empty text-center">
+                            <p>Todavía no has hecho ningún pedido.</p>
+                            <a asp-controller="Productos" asp-action="Catalogo" class="btn btn-flor">Ver productos</a>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var p in Model.Pedidos)
+                        {
+                            <div class="pedido-card">
+                                <div class="pedido-card-header">
+                                    <strong>Pedido #@p.Id</strong>
+                                    <span class="estado-badge estado-@p.Estado?.ToLower()">@p.Estado</span>
+                                </div>
+                                <p class="pedido-card-fecha">@p.FechaPedido.ToString("dd/MM/yyyy HH:mm")</p>
+                                <ul class="pedido-card-detalles">
+                                    @foreach (var d in p.Detalles)
+                                    {
+                                        <li>@d.Cantidad x @d.ProductoNombre — S/ @d.Subtotal</li>
+                                    }
+                                </ul>
+                                <div class="pedido-card-total">Total: <strong>S/ @p.Total</strong></div>
+                            </div>
+                        }
+                    }
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

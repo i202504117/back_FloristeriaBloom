@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="back_FloristeriaBloom/back_FloristeriaBloom.csproj" />
+  <Project Path="front_FloristeriaBloom/front_FloristeriaBloom.csproj" />
+</Solution>

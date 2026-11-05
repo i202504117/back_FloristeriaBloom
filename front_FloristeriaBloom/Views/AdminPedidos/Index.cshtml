@@ -1,0 +1,135 @@
+﻿@model List<front_FloristeriaBloom.Models.PedidoListadoViewModel>
+@{
+    Layout = null;
+    ViewData["Title"] = "Pedidos";
+    var estados = new[] { "Pendiente", "Preparando", "Enviado", "Entregado", "Cancelado" };
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-top d-flex align-items-center justify-content-between">
+            <a asp-controller="Productos" asp-action="Index" class="logo">🌸 FloristeriaBloom</a>
+            <nav class="main-nav d-none d-md-flex">
+                <a asp-controller="Productos" asp-action="Catalogo">Ver tienda</a>
+                <a asp-controller="Admin" asp-action="Index">Productos</a>
+                <a asp-controller="AdminAdicionales" asp-action="Index">Adicionales</a>
+                <a asp-controller="AdminPedidos" asp-action="Index">Pedidos</a>
+            </nav>
+            <div class="header-icons">
+                <a asp-controller="AdminPedidos" asp-action="Index" class="notif-bell" id="notifBell" title="Pedidos pendientes">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="admin-panel">
+        <div class="container">
+            <div class="admin-panel-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <p class="hero-small">PANEL DE ADMINISTRACIÓN</p>
+                    <h2><i class="fa-solid fa-truck"></i> Pedidos</h2>
+                </div>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="cart-empty text-center">
+                    <p>Todavía no hay pedidos registrados.</p>
+                </div>
+            }
+            else
+            {
+                <div class="admin-table-wrapper table-responsive">
+                    <table class="table cart-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Entrega</th>
+                                <th>Dirección</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td>#@p.Id</td>
+                                    <td>@p.ClienteNombre</td>
+                                    <td>@p.FechaPedido.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@(p.FechaEntrega?.ToString("dd/MM/yyyy") ?? "-")</td>
+                                    <td>@p.DireccionEntrega</td>
+                                    <td>S/ @p.Total</td>
+                                    <td>
+                                        <span class="estado-badge estado-@p.Estado?.ToLower()">@p.Estado</span>
+                                    </td>
+                                    <td>
+                                        <form asp-action="CambiarEstado" method="post" class="d-flex gap-2">
+                                            <input type="hidden" name="id" value="@p.Id" />
+                                            <select name="nuevoEstado" class="form-control form-control-sm" style="width:auto;">
+                                                @foreach (var e in estados)
+                                                {
+                                                    <option value="@e" selected="@(e == p.Estado)">@e</option>
+                                                }
+                                            </select>
+                                            <button type="submit" class="btn btn-flor btn-sm">Actualizar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+            const notifBadge = document.getElementById('notifBadge');
+            const notifBell = document.getElementById('notifBell');
+            let ultimoConteo = null;
+
+            async function actualizarNotificaciones() {
+                try {
+                    const resp = await fetch('/AdminPedidos/PendientesCount');
+                    const data = await resp.json();
+
+                    if (data.count > 0) {
+                        notifBadge.textContent = data.count;
+                        notifBadge.style.display = 'flex';
+                    } else {
+                        notifBadge.style.display = 'none';
+                    }
+
+                    if (ultimoConteo !== null && data.count > ultimoConteo) {
+                        notifBell.classList.add('pulse');
+                        setTimeout(() => notifBell.classList.remove('pulse'), 1200);
+                    }
+                    ultimoConteo = data.count;
+                } catch (e) {
+                    console.error('No se pudo actualizar notificaciones', e);
+                }
+            }
+
+            actualizarNotificaciones();
+            setInterval(actualizarNotificaciones, 15000);
+    </script>
+</body>
+</html>

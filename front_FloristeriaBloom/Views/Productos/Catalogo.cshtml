@@ -1,0 +1,219 @@
+﻿@model List<front_FloristeriaBloom.Models.ProductoViewModel>
+@{
+    Layout = null;
+    ViewData["Title"] = "Nuestros Productos";
+
+    var tiposFlor = Model.Select(p => p.CategoriaNombre)
+                          .Where(c => !string.IsNullOrEmpty(c))
+                          .Distinct()
+                          .OrderBy(c => c)
+                          .ToList();
+
+    var colores = Model.Select(p => p.Color)
+                        .Where(c => !string.IsNullOrEmpty(c))
+                        .Distinct()
+                        .OrderBy(c => c)
+                        .ToList();
+
+    var precioMin = Model.Any() ? Model.Min(p => p.Precio) : 0;
+    var precioMax = Model.Any() ? Model.Max(p => p.Precio) : 1000;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-top d-flex align-items-center justify-content-between">
+            <a asp-controller="Productos" asp-action="Index" class="logo">🌸 FloristeriaBloom</a>
+            <nav class="main-nav d-none d-md-flex">
+                <a asp-controller="Productos" asp-action="Index">Inicio</a>
+                <a asp-controller="Productos" asp-action="Catalogo">Productos</a>
+                <a href="#">Ocasiones</a>
+                <a href="#">Ofertas</a>
+                <a href="#">Contáctanos</a>
+            </nav>
+            <div class="header-icons">
+                @if (Context.Session.GetString("Rol") == "Admin")
+                {
+                    <a asp-controller="Admin" asp-action="Index" title="Panel Admin"><i class="fa-solid fa-gear"></i> Admin</a>
+                }
+                @if (!string.IsNullOrEmpty(Context.Session.GetString("Token")))
+                {
+                    <a asp-controller="Perfil" asp-action="Index" title="Mi cuenta"><i class="fa-solid fa-user"></i></a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" title="Mi cuenta"><i class="fa-regular fa-user"></i></a>
+                }
+                <a asp-controller="Carrito" asp-action="Index" class="cart-icon" title="Carrito">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER -->
+    <section class="catalog-banner">
+        <div class="container">
+            <p class="hero-small">FLORES Y DETALLES</p>
+            <h1>Flores y detalles de amor</h1>
+        </div>
+    </section>
+
+    <!-- CONTENIDO: SIDEBAR + GRID -->
+    <section class="catalog-section">
+        <div class="catalog-wrapper">
+
+            <!-- SIDEBAR DE FILTROS -->
+            <aside class="filters-sidebar">
+
+                <div class="filter-group">
+                    <h4>Tipo de flor</h4>
+                    @foreach (var tipo in tiposFlor)
+                    {
+                        <label class="filter-check">
+                            <input type="checkbox" class="f-tipo" value="@tipo" checked />
+                            <span>@tipo</span>
+                        </label>
+                    }
+                </div>
+
+                <div class="filter-group">
+                    <h4>Color</h4>
+                    @foreach (var color in colores)
+                    {
+                        <label class="filter-check">
+                            <input type="checkbox" class="f-color" value="@color" checked />
+                            <span>@color</span>
+                        </label>
+                    }
+                    @if (!colores.Any())
+                    {
+                        <p class="filter-empty">Aún no hay colores registrados.</p>
+                    }
+                </div>
+
+                <div class="filter-group">
+                    <h4>Filtrar por precio</h4>
+                    <div class="price-slider">
+                        <input type="range" id="priceMin" min="@precioMin" max="@precioMax" value="@precioMin" />
+                        <input type="range" id="priceMax" min="@precioMin" max="@precioMax" value="@precioMax" />
+                    </div>
+                    <p class="price-label">Precio: <span id="priceLabel">S/@precioMin — S/@precioMax</span></p>
+                    <button type="button" id="btnFiltrar" class="btn btn-flor w-100">FILTRAR</button>
+                </div>
+
+            </aside>
+
+            <!-- GRID DE PRODUCTOS -->
+            <div class="catalog-grid" id="catalogGrid">
+                @foreach (var p in Model)
+                {
+                    <div class="product-card catalog-card"
+                         data-tipo="@p.CategoriaNombre"
+                         data-color="@p.Color"
+                         data-precio="@p.Precio">
+                        <div class="product-image-container">
+                            <img src="@(string.IsNullOrEmpty(p.ImagenUrl) ? "/imagenes/rosas-rojas.jpg" : p.ImagenUrl)" class="img-fluid" />
+                        </div>
+                        <h3>@p.Nombre</h3>
+                        <p class="product-description">@p.Descripcion</p>
+                        <div class="price"><strong>S/ @p.Precio</strong></div>
+                        <button type="button" class="btn buy-button agregar-carrito-btn w-100" data-id="@p.Id">COMPRAR</button>
+                    </div>
+                }
+                <p id="sinResultados" class="filter-empty" style="display:none;">No se encontraron productos con esos filtros.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="container footer-top row">
+            <div class="footer-brand col-md-4 col-lg-3 mb-4">
+                <a asp-controller="Productos" asp-action="Index" class="footer-logo">🌸 FloristeriaBloom</a>
+                <p class="footer-slogan">Flores frescas a domicilio</p>
+            </div>
+            <div class="footer-col col-6 col-md-2 mb-4">
+                <h4>La Empresa</h4>
+                <a href="#">Blog de FloristeriaBloom</a>
+                <a href="#">Contacto</a>
+                <a href="#">Nosotros</a>
+            </div>
+            <div class="footer-col col-6 col-md-2 mb-4">
+                <h4>Mi Cuenta</h4>
+                <a href="#">Mi perfil</a>
+                <a href="#">Mis pedidos</a>
+            </div>
+            <div class="footer-col col-6 col-md-2 mb-4">
+                <h4>Legales</h4>
+                <a href="#">Políticas de despacho</a>
+                <a href="#">Términos y condiciones</a>
+            </div>
+            <div class="footer-col col-6 col-md-2 mb-4">
+                <h4>Contáctanos</h4>
+                <p><i class="fa-solid fa-phone"></i> +51 946 583 699</p>
+            </div>
+        </div>
+        <div class="footer-bottom"><p>© 2026 FloristeriaBloom. Todos los derechos reservados.</p></div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+            const grid = document.getElementById('catalogGrid');
+            const sinResultados = document.getElementById('sinResultados');
+            const priceMinInput = document.getElementById('priceMin');
+            const priceMaxInput = document.getElementById('priceMax');
+            const priceLabel = document.getElementById('priceLabel');
+
+            function actualizarLabelPrecio() {
+                let min = Math.min(+priceMinInput.value, +priceMaxInput.value);
+                let max = Math.max(+priceMinInput.value, +priceMaxInput.value);
+                priceLabel.textContent = `S/${min} — S/${max}`;
+            }
+
+            function aplicarFiltros() {
+                const tiposSeleccionados = Array.from(document.querySelectorAll('.f-tipo:checked')).map(c => c.value);
+                const coloresSeleccionados = Array.from(document.querySelectorAll('.f-color:checked')).map(c => c.value);
+                const min = Math.min(+priceMinInput.value, +priceMaxInput.value);
+                const max = Math.max(+priceMinInput.value, +priceMaxInput.value);
+
+                let visibles = 0;
+                document.querySelectorAll('.catalog-card').forEach(card => {
+                    const tipo = card.dataset.tipo || '';
+                    const color = card.dataset.color || '';
+                    const precio = parseFloat(card.dataset.precio);
+
+                    const pasaTipo = tiposSeleccionados.length === 0 || tiposSeleccionados.includes(tipo);
+                    const pasaColor = coloresSeleccionados.length === 0 || coloresSeleccionados.includes(color);
+                    const pasaPrecio = precio >= min && precio <= max;
+
+                    const visible = pasaTipo && pasaColor && pasaPrecio;
+                    card.style.display = visible ? '' : 'none';
+                    if (visible) visibles++;
+                });
+
+                sinResultados.style.display = visibles === 0 ? 'block' : 'none';
+            }
+
+            priceMinInput.addEventListener('input', actualizarLabelPrecio);
+            priceMaxInput.addEventListener('input', actualizarLabelPrecio);
+            document.getElementById('btnFiltrar').addEventListener('click', aplicarFiltros);
+            document.querySelectorAll('.f-tipo, .f-color').forEach(chk => chk.addEventListener('change', aplicarFiltros));
+    </script>
+
+</body>
+</html>

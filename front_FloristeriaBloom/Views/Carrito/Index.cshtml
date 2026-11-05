@@ -1,0 +1,203 @@
+﻿@model front_FloristeriaBloom.Models.CarritoViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Mi Carrito";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-top d-flex align-items-center justify-content-between">
+            <a asp-controller="Productos" asp-action="Index" class="logo">
+                🌸 FloristeriaBloom
+            </a>
+            <nav class="main-nav d-none d-md-flex">
+                <a asp-controller="Productos" asp-action="Index">Inicio</a>
+                <a asp-controller="Productos" asp-action="Catalogo">Productos</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="cart-section">
+        <div class="container">
+            <div class="cart-wrapper mx-auto">
+                <h2><i class="fa-solid fa-basket-shopping"></i> Mi Carrito</h2>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger cart-alert">@ViewBag.Error</div>
+                }
+
+                @if (!Model.Items.Any())
+                {
+                    <div class="cart-empty text-center">
+                        <p>Tu carrito está vacío.</p>
+                        <a asp-controller="Productos" asp-action="Index" class="btn btn-flor">Ver productos</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table cart-table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Adicionales</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>@item.Nombre</td>
+                                        <td>
+                                            @if (item.Adicionales.Any())
+                                            {
+                                                <ul class="mb-1 ps-3" style="font-size:13px;">
+                                                    @foreach (var a in item.Adicionales)
+                                                    {
+                                                        <li>@a.Nombre (+S/ @a.Precio)</li>
+                                                    }
+                                                </ul>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted" style="font-size:13px;">Ninguno</span>
+                                            }
+                                            <button type="button" class="abrir-adicionales-btn btn btn-sm btn-outline-secondary mt-1" data-line="@item.LineId">
+                                                <i class="fa-solid fa-plus"></i> Adicionales
+                                            </button>
+                                        </td>
+                                        <td>S/ @item.PrecioConAdicionales</td>
+                                        <td>@item.Cantidad</td>
+                                        <td>S/ @item.Subtotal</td>
+                                        <td>
+                                            <a href="#" class="cart-remove quitar-carrito-btn" data-line="@item.LineId" title="Quitar">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="cart-total">
+                        <span>Total</span>
+                        <strong>S/ @Model.Total</strong>
+                    </div>
+
+                    <!-- MENSAJE / DEDICATORIA -->
+                    <div class="cart-form">
+                        <h3 style="font-size:16px;margin-bottom:14px;"><i class="fa-solid fa-envelope"></i> Mensaje para la tarjeta (opcional)</h3>
+
+                        <div class="row g-3">
+                            <div class="col-md-6 auth-field">
+                                <label class="form-label">Ocasión</label>
+                                <select id="mensajeOcasion" class="form-control">
+                                    <option value="">-- Selecciona --</option>
+                                    <option value="Aniversario" selected="@(Model.Ocasion == "Aniversario")">Aniversario</option>
+                                    <option value="Cumpleaños" selected="@(Model.Ocasion == "Cumpleaños")">Cumpleaños</option>
+                                    <option value="Amor y romance" selected="@(Model.Ocasion == "Amor y romance")">Amor y romance</option>
+                                    <option value="Gracias" selected="@(Model.Ocasion == "Gracias")">Gracias</option>
+                                    <option value="Bodas" selected="@(Model.Ocasion == "Bodas")">Bodas</option>
+                                    <option value="Otros" selected="@(Model.Ocasion == "Otros")">Otros</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 auth-field">
+                                <label class="form-label">Firma</label>
+                                <input type="text" id="mensajeFirma" class="form-control" value="@Model.Firma" placeholder="Con cariño, ..." />
+                            </div>
+                            <div class="col-12 auth-field">
+                                <label class="form-label">Mensaje para la tarjeta</label>
+                                <textarea id="mensajeTexto" class="form-control" rows="3" placeholder="Escribe tu mensaje personalizado">@Model.MensajeTarjeta</textarea>
+                            </div>
+                            <div class="col-12 form-check">
+                                <input type="checkbox" class="form-check-input" id="mensajeAnonimo" @(Model.Anonimo ? "checked" : "") />
+                                <label class="form-check-label" for="mensajeAnonimo">Enviar de forma anónima</label>
+                            </div>
+                        </div>
+
+                        <button type="button" id="btnGuardarMensaje" class="btn btn-flor mt-3">Guardar mensaje</button>
+                    </div>
+
+                    <form asp-action="Confirmar" method="post" class="cart-form">
+                        <div class="row g-3">
+                            <div class="col-md-6 auth-field">
+                                <label class="form-label">Dirección de entrega</label>
+                                <input type="text" name="direccionEntrega" class="form-control" required />
+                            </div>
+                            <div class="col-md-6 auth-field">
+                                <label class="form-label">Fecha de entrega</label>
+                                <input type="date" name="fechaEntrega" class="form-control" required />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-flor w-100 mt-3">Confirmar pedido</button>
+                    </form>
+
+                    <a asp-controller="Productos" asp-action="Index" class="cart-continue">
+                        ← Seguir comprando
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL: elegir adicionales de una línea -->
+    <div class="modal fade" id="modalAdicionales" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar adicionales</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="listaAdicionalesModal">
+                    <!-- se llena por JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" id="btnConfirmarAdicionales" class="btn btn-flor" data-bs-dismiss="modal">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+            const chkAnonimo = document.getElementById('mensajeAnonimo');
+            const inputFirma = document.getElementById('mensajeFirma');
+
+            function actualizarEstadoFirma() {
+                if (chkAnonimo.checked) {
+                    inputFirma.value = '';
+                    inputFirma.disabled = true;
+                    inputFirma.placeholder = 'No aplica (envío anónimo)';
+                } else {
+                    inputFirma.disabled = false;
+                    inputFirma.placeholder = 'Con cariño, ...';
+                }
+            }
+
+            chkAnonimo.addEventListener('change', actualizarEstadoFirma);
+            actualizarEstadoFirma(); // por si la vista ya carga marcada como anónima
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+﻿@model front_FloristeriaBloom.Models.RegistroViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Registro";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="site-header">
+        <div class="header-top d-flex align-items-center justify-content-between">
+            <a asp-controller="Productos" asp-action="Index" class="logo">
+                🌸 FloristeriaBloom
+            </a>
+            <nav class="main-nav d-none d-md-flex">
+                <a asp-controller="Productos" asp-action="Index">Inicio</a>
+                <a asp-controller="Productos" asp-action="Catalogo">Catálogo</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- FORM REGISTRO -->
+    <section class="auth-section">
+        <div class="container">
+            <div class="auth-card mx-auto">
+                <p class="hero-small">ÚNETE A NOSOTROS</p>
+                <h2>Crear cuenta</h2>
+
+                <form asp-action="Registro" method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <div class="auth-field">
+                        <label class="form-label">Nombre</label>
+                        <input asp-for="Nombre" class="form-control" />
+                    </div>
+                    <div class="auth-field">
+                        <label class="form-label">Correo</label>
+                        <input asp-for="Email" class="form-control" />
+                    </div>
+                    <div class="auth-field">
+                        <label class="form-label">Contraseña</label>
+                        <input asp-for="Password" type="password" class="form-control" />
+                    </div>
+                    <div class="auth-field">
+                        <label class="form-label">Teléfono</label>
+                        <input asp-for="Telefono" class="form-control" />
+                    </div>
+                    <div class="auth-field">
+                        <label class="form-label">Dirección</label>
+                        <input asp-for="Direccion" class="form-control" />
+                    </div>
+
+                    <button type="submit" class="btn btn-flor w-100">Registrarme</button>
+                </form>
+
+                <p class="auth-footer">
+                    ¿Ya tienes cuenta?
+                    <a asp-action="Login">Inicia sesión aquí</a>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
